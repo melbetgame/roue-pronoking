@@ -1,0 +1,37 @@
+!-- FILE: promo.html -->
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Réclamer votre bonus — Pronokings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0; min-height:100vh; display:flex; justify-content:center; align-items:center; background:linear-gradient(180deg,#061021 0%,#04050a 100%); font-family:'Rubik',sans-serif; color:#fff; padding:20px;}
+    .box{background:rgba(255,255,255,0.03); padding:30px; border-radius:14px; text-align:center; max-width:500px; width:100%;}
+    h1{margin:0 0 10px; font-size:22px;}
+    .code{display:inline-block; padding:10px 16px; background:rgba(0,0,0,0.35); border-radius:10px; font-weight:700; font-size:18px; margin-top:12px;}
+    .btn-primary{display:inline-block; margin-top:16px; padding:12px 18px; background:#f6c84c; color:#0b0b12; border-radius:10px; font-weight:700; text-decoration:none;}
+    .small{color:#94a3b8; font-size:13px; margin-top:10px;}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Votre bonus est prêt 🎁</h1>
+    <p>Merci d'avoir joué sur Pronokings. Utilisez le code promotionnel ci-dessous pour ouvrir un compte chez nous sur Melbet.</p>
+    <div class="code">pronokings25</div>
+    <div>
+      <a class="btn-primary" href="https://melbet.com" target="_blank">Ouvrir un compte maintenant</a>
+    </div>
+    <p class="small">Après votre premier dépôt d'un montant minimum de 1€, vos gains vous seront crédités conformément à l'offre.</p>
+    <p class="small" id="wonAmount">Montant gagné : —</p>
+  </div>
+
+  <script>
+    function getQuery(){const q={};location.search.substring(1).split('&').forEach(p=>{if(!p)return;const[k,v]=p.split('=');q[decodeURIComponent(k)]=decodeURIComponent(v||'');});return q;}
+    const q=getQuery();
+    document.getElementById('wonAmount').textContent='Montant gagné : '+(q.amount||'—');
+  </script>
+</body>
+</html>
+
