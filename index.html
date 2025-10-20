@@ -1,90 +1,85 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Roue Pronokings — Tournez et Gagnez</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Roue de la chance</title>
   <style>
-    :root {
-      --bg:#0b0b12; 
-      --accent:#f6c84c; 
-      --danger:#ef4444;
-      font-family: 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-    }
     body {
-      margin:0; 
-      background:#0b0b12; 
-      display:flex; 
-      justify-content:center; 
-      align-items:center; 
-      height:100vh; 
-      color:#fff; 
-      font-family:'Rubik', sans-serif;
+      margin: 0;
+      background: #0b0b12;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
     }
+
     .wheel-container {
-      position:relative; 
-      text-align:center;
+      position: relative;
+      width: 400px;
+      height: 400px;
     }
-    canvas#wheel {border-radius:50%;}
-    /* 🔻 Triangle inversé (pointe sur la roue) */
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    /* Le pointeur est maintenant SUR la roue */
     .pointer {
-      position:absolute; 
-      bottom:-10px; 
-      left:50%; 
-      transform:translateX(-50%) rotate(180deg); 
-      width:0; height:0; 
-      border-left:20px solid transparent; 
-      border-right:20px solid transparent; 
-      border-bottom:40px solid var(--danger);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -190px); /* vers le haut sur le bord de la roue */
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 40px solid red; /* triangle vers le haut, posé sur la roue */
+      z-index: 10;
     }
-    .spin-btn {
-      margin-top:20px;
-      padding:12px 20px;
-      background:var(--accent); 
-      color:#0b0b12; 
-      font-weight:700; 
-      font-size:16px; 
-      border:none; 
-      border-radius:10px; 
-      cursor:pointer;
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: #f6c84c;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
     }
+
     .modal {
-      display:none; 
-      position:fixed; 
-      top:0; left:0; 
-      width:100%; height:100%; 
-      background:rgba(0,0,0,0.6); 
-      align-items:center; 
-      justify-content:center; 
-      z-index:100;
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
     }
+
     .panel {
-      background:#071127; 
-      padding:20px; 
-      border-radius:12px; 
-      text-align:center; 
-      width:300px;
+      background: #071127;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      width: 280px;
     }
-    .panel h2 {margin:0 0 10px;}
-    .btn-primary {
-      padding:10px 16px; 
-      background:var(--accent); 
-      color:#0b0b12; 
-      text-decoration:none; 
-      font-weight:700; 
-      border-radius:8px; 
-      display:inline-block;
-    }
-    .btn-close {
-      margin-top:10px; 
-      display:inline-block; 
-      padding:8px 14px; 
-      background:transparent; 
-      color:#fff; 
-      border:1px solid rgba(255,255,255,0.3); 
-      border-radius:8px; 
-      cursor:pointer;
+
+    .panel a {
+      display: inline-block;
+      margin-top: 10px;
+      background: #f6c84c;
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: #000;
+      font-weight: bold;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -92,92 +87,83 @@
   <div class="wheel-container">
     <canvas id="wheel" width="400" height="400"></canvas>
     <div class="pointer"></div>
-    <button class="spin-btn" id="spin">TOURNER LA ROUE</button>
   </div>
+
+  <button id="spin">TOURNER LA ROUE</button>
 
   <div class="modal" id="modal">
     <div class="panel">
       <h2>🎉 Félicitations !</h2>
-      <p id="winAmount">Vous avez gagné <strong>0€</strong></p>
-      <a id="claimBtn" class="btn-primary" href="#">Cliquez ici pour recevoir votre bonus</a>
-      <button class="btn-close" id="closeBtn">Fermer</button>
+      <p id="winAmount"></p>
+      <a id="claimBtn" href="#">Obtenir le bonus</a>
     </div>
   </div>
 
   <script>
-    const SEGMENTS = ["10€","20€","5€","100€","200€","250€","300€","500€","1000€"];
-    const COLORS = ["#ffbf00","#ff5c5c","#ffd166","#7ae582","#7cc8ff","#c08bff","#ff7ab6","#ffa94d","#6ee7b7"];
-    const canvas = document.getElementById('wheel');
-    const ctx = canvas.getContext('2d');
-    const cx = canvas.width / 2, cy = canvas.height / 2, radius = 180;
-    let startAngle = 0;
+    const wheel = document.getElementById('wheel');
+    const ctx = wheel.getContext('2d');
+    const segments = ["5€", "10€", "20€", "30€", "100€", "200€", "250€", "300€", "500€", "1000€"];
+    const colors = ["#f6c84c","#ff7b54","#4cd964","#34a1eb","#c56cf0","#ff5c5c","#7bed9f","#ffa94d","#74b9ff","#e77f67"];
 
-    function drawWheel() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const arc = (Math.PI * 2) / SEGMENTS.length;
-      for (let i = 0; i < SEGMENTS.length; i++) {
+    const centerX = wheel.width / 2;
+    const centerY = wheel.height / 2;
+    const radius = 180;
+
+    function drawWheel(startAngle = 0) {
+      const arc = (2 * Math.PI) / segments.length;
+      for (let i = 0; i < segments.length; i++) {
         const angle = startAngle + i * arc;
         ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, angle, angle + arc);
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, angle, angle + arc);
         ctx.closePath();
-        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fillStyle = colors[i];
         ctx.fill();
-        ctx.strokeStyle = '#061021'; ctx.lineWidth = 2; ctx.stroke();
         ctx.save();
-        ctx.translate(cx, cy);
+        ctx.translate(centerX, centerY);
         ctx.rotate(angle + arc / 2);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#061021';
-        ctx.font = 'bold 18px Rubik';
-        ctx.fillText(SEGMENTS[i], radius - 10, 5);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 18px Arial";
+        ctx.fillText(segments[i], radius - 10, 10);
         ctx.restore();
       }
     }
+
     drawWheel();
 
-    const spinBtn = document.getElementById('spin');
-    const modal = document.getElementById('modal');
-    const winAmountEl = document.getElementById('winAmount');
-    const claimBtn = document.getElementById('claimBtn');
-    const closeBtn = document.getElementById('closeBtn');
+    const spinBtn = document.getElementById("spin");
+    const modal = document.getElementById("modal");
+    const winText = document.getElementById("winAmount");
+    const claimBtn = document.getElementById("claimBtn");
 
-    function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
-    spinBtn.addEventListener('click', () => {
-      const arc = (Math.PI * 2) / SEGMENTS.length;
-      const chosenIndex = randomInt(0, SEGMENTS.length - 1);
-      const rotations = randomInt(5, 8);
-      // Pointe en bas → ajustement d’angle
-      const targetAngle = (Math.PI * 2 * rotations) - (chosenIndex * arc + arc / 2);
+    spinBtn.addEventListener("click", () => {
+      const arc = (2 * Math.PI) / segments.length;
+      const spinAngle = Math.random() * 2 * Math.PI;
+      const spins = Math.floor(Math.random() * 5) + 5;
+      const totalRotation = (spins * 2 * Math.PI) + spinAngle;
       const duration = 4000;
-      const from = startAngle;
-      let start = null;
+      const start = performance.now();
 
-      function animate(timestamp) {
-        if (!start) start = timestamp;
-        const elapsed = timestamp - start;
-        const t = Math.min(1, elapsed / duration);
-        const eased = easeOut(t);
-        startAngle = from + (targetAngle - from) * eased;
-        drawWheel();
-        if (t < 1) requestAnimationFrame(animate);
-        else {
-          startAngle = startAngle % (Math.PI * 2);
-          // 🔧 Correction du calcul du segment final
-          const landed = Math.floor(((startAngle + arc / 2) % (Math.PI * 2)) / arc);
-          const index = (SEGMENTS.length - landed) % SEGMENTS.length;
-          const amount = SEGMENTS[index];
-          winAmountEl.innerHTML = `Vous avez gagné <strong>${amount}</strong>`;
-          claimBtn.href = `promo.html?amount=${encodeURIComponent(amount)}`;
-          modal.style.display = 'flex';
+      function animate(time) {
+        const progress = Math.min((time - start) / duration, 1);
+        const easing = 1 - Math.pow(1 - progress, 3);
+        const angle = totalRotation * easing;
+        ctx.clearRect(0, 0, wheel.width, wheel.height);
+        drawWheel(angle);
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          const finalAngle = angle % (2 * Math.PI);
+          const index = Math.floor(((2 * Math.PI - finalAngle) / arc)) % segments.length;
+          const result = segments[index];
+          winText.textContent = `Vous avez gagné ${result} 🎊`;
+          claimBtn.href = `promo.html?gain=${encodeURIComponent(result)}`;
+          modal.style.display = "flex";
         }
       }
       requestAnimationFrame(animate);
     });
-
-    closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
   </script>
 </body>
-    </html>
+  </html>
