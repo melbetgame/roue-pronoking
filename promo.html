@@ -1,4 +1,3 @@
-!-- FILE: promo.html -->
 <!doctype html>
 <html lang="fr">
 <head>
@@ -24,14 +23,24 @@
       <a class="btn-primary" href="https://melbet.com" target="_blank">Ouvrir un compte maintenant</a>
     </div>
     <p class="small">Après votre premier dépôt d'un montant minimum de 1€, vos gains vous seront crédités conformément à l'offre.</p>
-    <p class="small" id="wonAmount">Montant gagné : —</p>
+    <p class="small" id="wonAmount"></p>
   </div>
 
   <script>
-    function getQuery(){const q={};location.search.substring(1).split('&').forEach(p=>{if(!p)return;const[k,v]=p.split('=');q[decodeURIComponent(k)]=decodeURIComponent(v||'');});return q;}
-    const q=getQuery();
-    document.getElementById('wonAmount').textContent='Montant gagné : '+(q.amount||'—');
+    function getQuery(){
+      const q = {};
+      location.search.substring(1).split('&').forEach(p=>{
+        if(!p)return;
+        const [k,v]=p.split('=');
+        q[decodeURIComponent(k)] = decodeURIComponent(v||'');
+      });
+      return q;
+    }
+
+    const q = getQuery();
+    if(q.amount){
+      document.getElementById('wonAmount').textContent = 'Montant gagné : ' + q.amount;
+    }
   </script>
 </body>
-</html>
-
+  </html>
