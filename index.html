@@ -6,26 +6,92 @@
   <title>Roue Pronokings — Tournez et Gagnez</title>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b0b12; --accent:#f6c84c; --danger:#ef4444;
+    :root {
+      --bg:#0b0b12; 
+      --accent:#f6c84c; 
+      --danger:#ef4444;
       font-family: 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
     }
-    body{margin:0; background:#0b0b12; display:flex; justify-content:center; align-items:center; height:100vh; color:#fff; font-family:'Rubik', sans-serif;}
-    .wheel-container{position:relative; text-align:center;}
-    canvas#wheel{border-radius:50%;}
-    .pointer{position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:20px solid transparent; border-right:20px solid transparent; border-bottom:40px solid var(--danger);}
-    .spin-btn{margin-top:20px;padding:12px 20px;background:var(--accent); color:#0b0b12; font-weight:700; font-size:16px; border:none; border-radius:10px; cursor:pointer;}
-    .modal{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100;}
-    .panel{background:#071127; padding:20px; border-radius:12px; text-align:center; width:300px;}
-    .panel h2{margin:0 0 10px;}
-    .btn-primary{padding:10px 16px; background:var(--accent); color:#0b0b12; text-decoration:none; font-weight:700; border-radius:8px; display:inline-block;}
-    .btn-close{margin-top:10px; display:inline-block; padding:8px 14px; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.3); border-radius:8px; cursor:pointer;}
+    body {
+      margin:0; 
+      background:#0b0b12; 
+      display:flex; 
+      justify-content:center; 
+      align-items:center; 
+      height:100vh; 
+      color:#fff; 
+      font-family:'Rubik', sans-serif;
+    }
+    .wheel-container {
+      position:relative; 
+      text-align:center;
+    }
+    canvas#wheel {border-radius:50%;}
+    /* 🔻 Triangle inversé (pointe sur la roue) */
+    .pointer {
+      position:absolute; 
+      bottom:-10px; 
+      left:50%; 
+      transform:translateX(-50%) rotate(180deg); 
+      width:0; height:0; 
+      border-left:20px solid transparent; 
+      border-right:20px solid transparent; 
+      border-bottom:40px solid var(--danger);
+    }
+    .spin-btn {
+      margin-top:20px;
+      padding:12px 20px;
+      background:var(--accent); 
+      color:#0b0b12; 
+      font-weight:700; 
+      font-size:16px; 
+      border:none; 
+      border-radius:10px; 
+      cursor:pointer;
+    }
+    .modal {
+      display:none; 
+      position:fixed; 
+      top:0; left:0; 
+      width:100%; height:100%; 
+      background:rgba(0,0,0,0.6); 
+      align-items:center; 
+      justify-content:center; 
+      z-index:100;
+    }
+    .panel {
+      background:#071127; 
+      padding:20px; 
+      border-radius:12px; 
+      text-align:center; 
+      width:300px;
+    }
+    .panel h2 {margin:0 0 10px;}
+    .btn-primary {
+      padding:10px 16px; 
+      background:var(--accent); 
+      color:#0b0b12; 
+      text-decoration:none; 
+      font-weight:700; 
+      border-radius:8px; 
+      display:inline-block;
+    }
+    .btn-close {
+      margin-top:10px; 
+      display:inline-block; 
+      padding:8px 14px; 
+      background:transparent; 
+      color:#fff; 
+      border:1px solid rgba(255,255,255,0.3); 
+      border-radius:8px; 
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
   <div class="wheel-container">
-    <div class="pointer"></div>
     <canvas id="wheel" width="400" height="400"></canvas>
+    <div class="pointer"></div>
     <button class="spin-btn" id="spin">TOURNER LA ROUE</button>
   </div>
 
@@ -47,7 +113,7 @@
     let startAngle = 0;
 
     function drawWheel() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const arc = (Math.PI * 2) / SEGMENTS.length;
       for (let i = 0; i < SEGMENTS.length; i++) {
         const angle = startAngle + i * arc;
@@ -83,7 +149,8 @@
       const arc = (Math.PI * 2) / SEGMENTS.length;
       const chosenIndex = randomInt(0, SEGMENTS.length - 1);
       const rotations = randomInt(5, 8);
-      const targetAngle = (Math.PI * 2 * rotations) + (Math.PI / 2 - (chosenIndex * arc + arc / 2));
+      // Pointe en bas → ajustement d’angle
+      const targetAngle = (Math.PI * 2 * rotations) - (chosenIndex * arc + arc / 2);
       const duration = 4000;
       const from = startAngle;
       let start = null;
@@ -98,8 +165,10 @@
         if (t < 1) requestAnimationFrame(animate);
         else {
           startAngle = startAngle % (Math.PI * 2);
-          const landed = (SEGMENTS.length - Math.floor((startAngle / arc) % SEGMENTS.length)) % SEGMENTS.length;
-          const amount = SEGMENTS[landed];
+          // 🔧 Correction du calcul du segment final
+          const landed = Math.floor(((startAngle + arc / 2) % (Math.PI * 2)) / arc);
+          const index = (SEGMENTS.length - landed) % SEGMENTS.length;
+          const amount = SEGMENTS[index];
           winAmountEl.innerHTML = `Vous avez gagné <strong>${amount}</strong>`;
           claimBtn.href = `promo.html?amount=${encodeURIComponent(amount)}`;
           modal.style.display = 'flex';
